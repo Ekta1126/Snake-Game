@@ -11,31 +11,28 @@ class Game extends JPanel {
     private Timer timer;
     private Snake snake;
     private Point cherry;
-    private Point bonusCherry;
+    private ArrayList<Point> bugs;
     private int points = 0;
     private int best = 0;
     private BufferedImage cherryImage;
-    private BufferedImage bonusCherryImage;
-    private GameStatus status;
     private boolean didLoadCherryImage = true;
-    private boolean didLoadBonusImage = true;
+    private EvolutionTree evolutionTree;
+    private GameStatus status;
+
+    private static final Font FONT_M = new Font("Times New Roman", Font.PLAIN, 24);
+    private static final Font FONT_M_ITALIC = new Font("Times New Roman", Font.PLAIN, 24);
+    private static final Font FONT_L = new Font("Times New Roman", Font.PLAIN, 84);
+    private static final Font FONT_XL = new Font("Times New Roman", Font.PLAIN, 100);
     private static final int WIDTH = 760;
     private static final int HEIGHT = 520;
     private static final int DELAY = 50;
-    private static final int CELL_SIZE = 20;
-
-    // Fonts for text
-    private static final Font FONT_M = new Font("Times New Roman", Font.PLAIN, 24);
-    private static final Font FONT_L = new Font("Times New Roman", Font.PLAIN, 84);
 
     // Constructor
     public Game() {
         try {
             cherryImage = ImageIO.read(new File("cherry.png"));
-            bonusCherryImage = ImageIO.read(new File("bonus_cherry.png"));
         } catch (IOException e) {
             didLoadCherryImage = false;
-            didLoadBonusImage = false;
         }
 
         addKeyListener(new KeyListener());
@@ -44,6 +41,8 @@ class Game extends JPanel {
         setDoubleBuffered(true);
 
         snake = new Snake(WIDTH / 2, HEIGHT / 2);
+        evolutionTree = new EvolutionTree();
+        bugs = new ArrayList<>();
         status = GameStatus.NOT_STARTED;
         repaint();
     }
@@ -55,35 +54,37 @@ class Game extends JPanel {
         Toolkit.getDefaultToolkit().sync();
     }
 
+    // Update the game state
     private void update() {
         snake.move();
 
-        // Check if the snake eats the cherry
-        if (cherry != null && snake.getHead().intersects(cherry, CELL_SIZE)) {
+        if (cherry != null && snake.getHead().intersects(cherry, 20)) {
             snake.addTail();
             cherry = null;
             points++;
+            evolutionTree.addExperience(10);
+        }
 
-            // Speed up the game as the score increases
-            if (points % 5 == 0) {
-                increaseSpeed();
+        for (Point bug : bugs) {
+            if (snake.getHead().intersects(bug, 20)) {
+                snake.addTail();
+                bugs.remove(bug);
+                points += 2;
+                evolutionTree.addExperience(5);
+                break;
             }
         }
 
-        // Check if the snake eats the bonus cherry
-        if (bonusCherry != null && snake.getHead().intersects(bonusCherry, CELL_SIZE)) {
-            snake.addTail();
-            bonusCherry = null;
-            points += 3;
-        }
-
-        // Spawn cherries
         if (cherry == null) {
             spawnCherry();
         }
 
-        if (bonusCherry == null && points > 0 && points % 10 == 0) {
-            spawnBonusCherry();
+        if (bugs.size() < 3) {
+            spawnBug();
+        }
+
+        if (points > 0 && points % 10 == 0) {
+            increaseSpeed();
         }
 
         checkForGameOver();
@@ -92,8 +93,9 @@ class Game extends JPanel {
     private void reset() {
         points = 0;
         cherry = null;
-        bonusCherry = null;
+        bugs.clear();
         snake = new Snake(WIDTH / 2, HEIGHT / 2);
+        evolutionTree.resetExperience();
         setStatus(GameStatus.RUNNING);
     }
 
@@ -104,10 +106,6 @@ class Game extends JPanel {
                 timer.schedule(new GameLoop(), 0, DELAY);
                 break;
             case PAUSED:
-                if (timer != null) {
-                    timer.cancel();
-                }
-                break;
             case GAME_OVER:
                 if (timer != null) {
                     timer.cancel();
@@ -115,6 +113,7 @@ class Game extends JPanel {
                 best = Math.max(points, best);
                 break;
         }
+
         status = newStatus;
     }
 
@@ -124,7 +123,7 @@ class Game extends JPanel {
 
     private void checkForGameOver() {
         Point head = snake.getHead();
-        boolean hitBoundary = head.getX() < 0 || head.getX() >= WIDTH || head.getY() < 0 || head.getY() >= HEIGHT;
+        boolean hitBoundary = head.getX() <= 18 || head.getX() >= WIDTH + 0 || head.getY() <= 40 || head.getY() >= HEIGHT + 30;
 
         boolean ateItself = false;
         for (Point t : snake.getTail()) {
@@ -136,76 +135,77 @@ class Game extends JPanel {
         }
     }
 
-    private void spawnCherry() {
-        cherry = new Point((new Random()).nextInt(WIDTH / CELL_SIZE) * CELL_SIZE,
-                (new Random()).nextInt(HEIGHT / CELL_SIZE) * CELL_SIZE);
-    }
-
-    private void spawnBonusCherry() {
-        bonusCherry = new Point((new Random()).nextInt(WIDTH / CELL_SIZE) * CELL_SIZE,
-                (new Random()).nextInt(HEIGHT / CELL_SIZE) * CELL_SIZE);
+    private void drawCenteredString(Graphics g, String text, Font font, int y) {
+        FontMetrics metrics = g.getFontMetrics(font);
+        int x = (WIDTH - metrics.stringWidth(text)) / 2;
+        g.setFont(font);
+        g.drawString(text, x, y);
     }
 
     private void render(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        
-        // Draw grid
-        g2d.setColor(new Color(0, 100, 0));
-        for (int x = 0; x < WIDTH; x += CELL_SIZE) {
-            for (int y = 0; y < HEIGHT; y += CELL_SIZE) {
-                g2d.drawRect(x, y, CELL_SIZE, CELL_SIZE);
-            }
-        }
-
-        // Draw score and best score
         g2d.setColor(Color.WHITE);
         g2d.setFont(FONT_M);
-        g2d.drawString("Score: " + points, 20, 30);
-        g2d.drawString("Best: " + best, WIDTH - 120, 30);
 
-        // Draw cherries
+        if (status == GameStatus.NOT_STARTED) {
+            drawCenteredString(g2d, "SNAKE", FONT_XL, 200);
+            drawCenteredString(g2d, "GAME", FONT_XL, 300);
+            drawCenteredString(g2d, "Press any key to begin", FONT_M_ITALIC, 330);
+            return;
+        }
+
+        g2d.drawString("Score: " + String.format("%02d", points), 20, 30);
+        g2d.drawString("Best: " + String.format("%02d", best), 630, 30);
+        g2d.drawString("XP: " + evolutionTree.getExperience(), 300, 30);
+
         if (cherry != null) {
             if (didLoadCherryImage) {
-                g2d.drawImage(cherryImage, cherry.getX(), cherry.getY(), CELL_SIZE, CELL_SIZE, null);
-            } else {
-                g2d.setColor(Color.RED);
-                g2d.fillOval(cherry.getX(), cherry.getY(), CELL_SIZE, CELL_SIZE);
-            }
-        }
-
-        if (bonusCherry != null) {
-            if (didLoadBonusImage) {
-                g2d.drawImage(bonusCherryImage, bonusCherry.getX(), bonusCherry.getY(), CELL_SIZE, CELL_SIZE, null);
+                g2d.drawImage(cherryImage, cherry.getX(), cherry.getY(), 40, 40, null);
             } else {
                 g2d.setColor(Color.YELLOW);
-                g2d.fillOval(bonusCherry.getX(), bonusCherry.getY(), CELL_SIZE, CELL_SIZE);
+                g2d.fillOval(cherry.getX(), cherry.getY(), 20, 20);
             }
         }
 
-        // Draw snake
-        g2d.setColor(Color.BLUE);
-        Point head = snake.getHead();
-        g2d.fillRect(head.getX(), head.getY(), CELL_SIZE, CELL_SIZE);
+        for (Point bug : bugs) {
+            g2d.setColor(Color.ORANGE);
+            g2d.fillOval(bug.getX(), bug.getY(), 15, 15);
+        }
+
+        if (status == GameStatus.GAME_OVER) {
+            drawCenteredString(g2d, "Press Enter to restart", FONT_M_ITALIC, 330);
+            drawCenteredString(g2d, "GAME OVER", FONT_L, 300);
+        }
+
+        if (status == GameStatus.PAUSED) {
+            g2d.drawString("Paused", 600, 14);
+        }
+
+        g2d.setColor(new Color(11, 11, 69));
+        g2d.fillRect(snake.getHead().getX(), snake.getHead().getY(), 10, 10);
 
         for (Point t : snake.getTail()) {
-            g2d.fillRect(t.getX(), t.getY(), CELL_SIZE, CELL_SIZE);
+            g2d.fillRect(t.getX(), t.getY(), 10, 10);
         }
 
-        // Draw game over screen
-        if (status == GameStatus.GAME_OVER) {
-            g2d.setFont(FONT_L);
-            g2d.setColor(Color.RED);
-            String message = "GAME OVER";
-            int messageWidth = g2d.getFontMetrics().stringWidth(message);
-            g2d.drawString(message, (WIDTH - messageWidth) / 2, HEIGHT / 2);
-        }
+        g2d.setColor(Color.WHITE);
+        g2d.setStroke(new BasicStroke(4));
+        g2d.drawRect(12, 40, WIDTH, HEIGHT);
+    }
+
+    private void spawnCherry() {
+        cherry = new Point(new Random().nextInt(WIDTH - 60) + 20, new Random().nextInt(HEIGHT - 60) + 40);
+    }
+
+    private void spawnBug() {
+        bugs.add(new Point(new Random().nextInt(WIDTH - 60) + 20, new Random().nextInt(HEIGHT - 60) + 40));
     }
 
     private void increaseSpeed() {
         if (timer != null) {
             timer.cancel();
             timer = new Timer();
-            timer.schedule(new GameLoop(), 0, Math.max(DELAY - points, 10));
+            timer.schedule(new GameLoop(), 0, Math.max(DELAY - points, 20));
         }
     }
 
@@ -245,7 +245,7 @@ class Game extends JPanel {
         }
     }
 
-    private class GameLoop extends TimerTask {
+    private class GameLoop extends java.util.TimerTask {
         public void run() {
             update();
             repaint();
@@ -253,12 +253,30 @@ class Game extends JPanel {
     }
 }
 
-// Enum for game status
+class EvolutionTree {
+    private int experience;
+
+    public EvolutionTree() {
+        experience = 0;
+    }
+
+    public void addExperience(int amount) {
+        experience += amount;
+    }
+
+    public int getExperience() {
+        return experience;
+    }
+
+    public void resetExperience() {
+        experience = 0;
+    }
+}
+
 enum GameStatus {
     NOT_STARTED, RUNNING, PAUSED, GAME_OVER
 }
 
-// Enum for snake direction
 enum Direction {
     UP, DOWN, LEFT, RIGHT;
 
@@ -271,7 +289,6 @@ enum Direction {
     }
 }
 
-// Point class for handling positions
 class Point {
     private int x;
     private int y;
@@ -281,12 +298,9 @@ class Point {
         this.y = y;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
+    public Point(Point p) {
+        this.x = p.getX();
+        this.y = p.getY();
     }
 
     public void move(Direction d, int value) {
@@ -297,25 +311,52 @@ class Point {
             case DOWN:
                 this.y += value;
                 break;
-            case LEFT:
-                this.x -= value;
-                break;
             case RIGHT:
                 this.x += value;
+                break;
+            case LEFT:
+                this.x -= value;
                 break;
         }
     }
 
-    public boolean intersects(Point p, int tolerance) {
-        return Math.abs(this.x - p.getX()) < tolerance && Math.abs(this.y - p.getY()) < tolerance;
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public Point setX(int x) {
+        this.x = x;
+        return this;
+    }
+
+    public Point setY(int y) {
+        this.y = y;
+        return this;
     }
 
     public boolean equals(Point p) {
         return this.x == p.getX() && this.y == p.getY();
     }
+
+    public String toString() {
+        return "(" + x + ", " + y + ")";
+    }
+
+    public boolean intersects(Point p) {
+        return intersects(p, 10);
+    }
+
+    public boolean intersects(Point p, int tolerance) {
+        int diffX = Math.abs(x - p.getX());
+        int diffY = Math.abs(y - p.getY());
+        return this.equals(p) || (diffX <= tolerance && diffY <= tolerance);
+    }
 }
 
-// Snake class
 class Snake {
     private Direction direction;
     private Point head;
@@ -325,39 +366,40 @@ class Snake {
         this.head = new Point(x, y);
         this.direction = Direction.RIGHT;
         this.tail = new ArrayList<>();
-        this.tail.add(new Point(x - 20, y));
-        this.tail.add(new Point(x - 40, y));
+
+        for (int i = 0; i < 3; i++) {
+            this.tail.add(new Point(-10, -10));
+        }
     }
 
     public void move() {
-        Point prevHead = new Point(head.getX(), head.getY());
-        head.move(direction, 20);
+        ArrayList<Point> newTail = new ArrayList<>();
 
-        for (int i = tail.size() - 1; i > 0; i--) {
-            tail.set(i, tail.get(i - 1));
+        for (int i = 0, size = tail.size(); i < size; i++) {
+            Point previous = i == 0 ? head : tail.get(i - 1);
+            newTail.add(new Point(previous.getX(), previous.getY()));
         }
-        if (!tail.isEmpty()) {
-            tail.set(0, prevHead);
-        }
+
+        this.tail = newTail;
+        this.head.move(this.direction, 10);
     }
 
     public void addTail() {
-        Point last = tail.isEmpty() ? head : tail.get(tail.size() - 1);
-        tail.add(new Point(last.getX(), last.getY()));
+        this.tail.add(new Point(-10, -10));
     }
 
     public void turn(Direction d) {
-        if ((d.isX() && direction.isY()) || (d.isY() && direction.isX())) {
+        if (d.isX() && direction.isY() || d.isY() && direction.isX()) {
             direction = d;
         }
     }
 
-    public Point getHead() {
-        return head;
+    public ArrayList<Point> getTail() {
+        return this.tail;
     }
 
-    public ArrayList<Point> getTail() {
-        return tail;
+    public Point getHead() {
+        return this.head;
     }
 }
 
@@ -368,8 +410,9 @@ public class Main extends JFrame {
 
     private void initUI() {
         add(new Game());
-        setTitle("Enhanced Snake Game");
-        setSize(800, 600);
+
+        setTitle("Snake Evolution");
+        setSize(800, 610);
         setLocationRelativeTo(null);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
