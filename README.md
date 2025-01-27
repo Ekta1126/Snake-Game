@@ -1,4 +1,4 @@
-# Enhanced Snake Game
+# Snake Game
 
 This repository contains an enhanced version of the classic Snake game written in Java. The game introduces new features to make the gameplay more dynamic, engaging, and visually appealing.
 
