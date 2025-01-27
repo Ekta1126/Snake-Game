@@ -2,7 +2,6 @@
 
 ## Overview
 An engaging and feature-rich Snake game built with Java. Inspired by the classic Snake game, this enhanced version incorporates exciting features like a skill tree, multiplayer mechanics, and quests to make the gameplay more dynamic and entertaining.
-<img width="610" alt="image" src="https://github.com/user-attachments/assets/eaa967bf-a659-40fc-a398-3e8c18f922e9" /> <img width="596" alt="image" src="https://github.com/user-attachments/assets/5c747a48-5233-455d-8645-f6239c1486b2" />
 
 ## Features
 1. **Classic Gameplay**: Navigate the snake, collect orbs, and grow longer while avoiding collisions.
@@ -50,6 +49,9 @@ An engaging and feature-rich Snake game built with Java. Inspired by the classic
 - [x] Add skill tree for upgrades
 - [x] Include bugs as additional collectibles
 - [x] Improve graphics and animations
+
+## Result
+<img width="610" alt="image" src="https://github.com/user-attachments/assets/eaa967bf-a659-40fc-a398-3e8c18f922e9" /> <img width="596" alt="image" src="https://github.com/user-attachments/assets/5c747a48-5233-455d-8645-f6239c1486b2" />
 
 ## Contributing
 Contributions are welcome! If you'd like to improve the game or add new features, please follow these steps:
