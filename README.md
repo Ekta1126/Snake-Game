@@ -1,64 +1,100 @@
-# Snake Game
+# Enhanced Snake Game
 
-Welcome to the **Snake Game**, a classic arcade game implemented in Java using Swing. The goal of the game is to control a snake that grows longer as it eats cherries, while avoiding collisions with the walls and the snake's own tail.
+This repository contains an enhanced version of the classic Snake game written in Java. The game introduces new features to make the gameplay more dynamic, engaging, and visually appealing.
 
 ## Features
 
-- Classic Snake gameplay mechanics
-- Cherry spawning and eating system
-- Score tracking with best score saving
-- Game pause and resume functionality
-- Game over condition handling
-- Simple and intuitive controls
-- Colorful graphics with a cherry image (customizable)
+- **Classic Snake Gameplay:** Navigate the snake to eat cherries and grow longer.
+- **Bonus Cherries:** Occasionally spawn cherries with higher points and shorter durations.
+- **Increasing Difficulty:** The snake speeds up as your score increases.
+- **Pause and Resume:** Pause the game at any point and resume with a key press.
+- **High Score Tracking:** Tracks your best score during the session.
+- **Grid Background:** A visually appealing grid for a modern aesthetic.
+- **Improved Controls:** Responsive arrow key controls for smooth gameplay.
+- **Game Over Screen:** Displays your final score and provides an option to restart the game.
+
+## Screenshots
+
+*Add screenshots or GIFs of your game here to showcase gameplay.*
 
 ## Getting Started
 
+Follow these instructions to get a copy of the project up and running on your local machine.
+
 ### Prerequisites
 
-To run this project, ensure you have the following installed:
+Ensure you have the following installed on your system:
 
-- Java Development Kit (JDK) 8 or higher
-- An IDE (such as IntelliJ IDEA, Eclipse, or NetBeans) or a text editor
-- [Optional] The `cherry.png` image file (included in the repository)
+- [Java Development Kit (JDK)](https://www.oracle.com/java/technologies/javase-downloads.html) 8 or later
+- An IDE or text editor (e.g., IntelliJ IDEA, Eclipse, VS Code) to run the project
 
-### Clone the Repository
+### Installation
 
-To get started, clone the repository to your local machine:
-
-bash
-git clone https://github.com/your-username/snake-game.git
-### Compile and Run
-
-1. Open the project in your IDE or navigate to the project directory in your terminal.
-2. Compile the Java files. If using the command line, you can compile the files with:
-
+1. Clone the repository:
    ```bash
-   javac Main.java
-### Controls
+   git clone https://github.com/your-username/enhanced-snake-game.git
+   ```
 
-- **Arrow Keys**: Control the direction of the snake (Up, Down, Left, Right)
-- **P**: Pause or resume the game
-- **Enter**: Restart the game after a game over
+2. Navigate to the project directory:
+   ```bash
+   cd enhanced-snake-game
+   ```
 
-### Game Logic
+3. Open the project in your preferred IDE.
 
-- The snake moves automatically in the direction it is facing.
-- The player can change the snake's direction using the arrow keys.
-- Each time the snake eats a cherry, it grows longer, and the score increases.
-- The game ends if the snake collides with the walls or itself.
-- The best score is saved and displayed during the game.
+4. Compile and run the `Main` class to start the game.
 
-### Customization
+### Running the Game
 
-- You can replace the default cherry image (`cherry.png`) with your own by placing an image file named `cherry.png` in the project directory.
-- Modify the game settings, such as the width, height, and delay, by changing the constants defined in the `Game` class.
+1. Use the arrow keys to control the snake's movement:
+   - **Up Arrow**: Move up
+   - **Down Arrow**: Move down
+   - **Left Arrow**: Move left
+   - **Right Arrow**: Move right
 
-### License
+2. Press `P` to pause and resume the game.
+3. Press `Enter` to restart after a Game Over.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## File Structure
 
-### Acknowledgments
+```plaintext
+src/
+├── Main.java          # Entry point of the application
+├── Game.java          # Main game logic and rendering
+├── Snake.java         # Snake class to handle movement and growth
+├── Point.java         # Point class for representing coordinates
+├── GameStatus.java    # Enum to manage game states
+├── Direction.java     # Enum for snake movement directions
+└── cherry.png         # Cherry image used in the game (optional)
+```
 
-- Inspired by the classic Snake game and tutorials on game development with Java.
-- Thanks to the open-source community for various resources and libraries that made this project possible.
+## Customization
+
+Feel free to modify the game as per your preferences:
+
+- **Cherry Appearance:** Replace `cherry.png` with a custom image in the root directory.
+- **Speed and Difficulty:** Adjust `DELAY` in `Game.java` to modify the game speed.
+- **Grid Size:** Update `WIDTH` and `HEIGHT` to change the game area.
+
+## Contributing
+
+Contributions are welcome! If you have ideas for further improvements or find any bugs, feel free to:
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'Add your feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- The classic Snake game for inspiration.
+- Java Swing and AWT libraries for GUI development.
+
+---
+
+Enjoy playing the Enhanced Snake Game! Feel free to share your feedback or suggest new features.
