@@ -44,15 +44,11 @@ An engaging and feature-rich Snake game built with Java. Inspired by the classic
 
 ## Game Modes
 - **Single Player**: Play against the environment and set high scores.
-- **Multiplayer** (Coming Soon): Compete with other players in real-time.
 
 ## Development Roadmap
 - [x] Add skill tree for upgrades
 - [x] Include bugs as additional collectibles
 - [x] Improve graphics and animations
-- [ ] Implement multiplayer functionality
-- [ ] Add more quests and challenges
-- [ ] Create leaderboards for competitive play
 
 ## Contributing
 Contributions are welcome! If you'd like to improve the game or add new features, please follow these steps:
